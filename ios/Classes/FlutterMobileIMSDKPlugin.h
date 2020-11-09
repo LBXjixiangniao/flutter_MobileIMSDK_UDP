@@ -1,4 +1,6 @@
 #import <Flutter/Flutter.h>
-
-@interface FlutterMobileIMSDKPlugin : NSObject<FlutterPlugin>
+#import "ChatBaseEvent.h"
+#import "ChatMessageEvent.h"
+#import "MessageQoSEvent.h"
+@interface FlutterMobileIMSDKPlugin : NSObject<FlutterPlugin,MessageQoSEvent,ChatMessageEvent,ChatBaseEvent>
 @end
