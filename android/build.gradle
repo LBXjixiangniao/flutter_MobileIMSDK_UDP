@@ -31,3 +31,11 @@ android {
         disable 'InvalidPackage'
     }
 }
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // MobileIMSDK的依赖库
+    implementation 'com.google.code.gson:gson:2.8.6'
+    // MobileIMSDK的SDK库
+    implementation files('libs/MobileIMSDKServer_META.jar')
+    implementation files('libs/MobileIMSDK4a_tcp.jar')
+}

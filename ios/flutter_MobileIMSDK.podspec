@@ -14,10 +14,16 @@ A new flutter plugin project.
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
+  s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
+  
+  s.static_framework = true
+  s.public_header_files = 'Classes/**/*.h'
+  s.private_header_files = 'Classes/MobileIMSDK4iLib/**/*{.h,.a}'
+  s.ios.vendored_library = 'Classes/MobileIMSDK4iLib/libMobileIMSDK4i_udp.a'
+  s.vendored_libraries = 'Classes/**/*.a'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
-  s.swift_version = '5.0'
 end

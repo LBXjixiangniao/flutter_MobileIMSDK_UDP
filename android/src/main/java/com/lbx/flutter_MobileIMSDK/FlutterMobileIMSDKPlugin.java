@@ -2,6 +2,8 @@ package com.lbx.flutter_MobileIMSDK;
 
 import androidx.annotation.NonNull;
 
+import net.x52im.mobileimsdk.android.conf.ConfigEntity;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -29,6 +31,7 @@ public class FlutterMobileIMSDKPlugin implements FlutterPlugin, MethodCallHandle
       result.success("Android " + android.os.Build.VERSION.RELEASE);
     } else {
       result.notImplemented();
+      ConfigEntity.appKey = "5418023dfd98c579b6001741";
     }
   }
 
