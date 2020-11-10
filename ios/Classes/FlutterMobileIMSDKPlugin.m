@@ -9,6 +9,7 @@
 /* 收到服务端的登陆完成反馈时要通知的观察者（因登陆是异步实现，本观察者将由
  *  ChatBaseEvent 事件的处理者在收到服务端的登陆反馈后通知之）*/
 @property (nonatomic, copy) ObserverCompletion onLoginSucessObserver;// block代码块一定要用copy属性，否则报错！
+@property (nonatomic,strong) FlutterMethodChannel *channel;
 
 @end
 @implementation FlutterMobileIMSDKPlugin
@@ -17,38 +18,9 @@
       methodChannelWithName:@"flutter_MobileIMSDK"
             binaryMessenger:[registrar messenger]];
   FlutterMobileIMSDKPlugin* instance = [[FlutterMobileIMSDKPlugin alloc] init];
+    instance.channel = channel;
   [registrar addMethodCallDelegate:instance channel:channel];
 }
-
-//- (void)initForLogin {
-//    // 准备好异步登陆结果回调block（将在登陆方法中使用）
-//    self.onLoginSucessObserver = ^(id observerble ,id data) {
-//       
-//        // 服务端返回的登陆结果值
-//        int code = [(NSNumber *)data intValue];
-//        // 登陆成功
-//        if(code == 0)
-//        {
-//            // TODO 提示：登陆MobileIMSDK服务器成功后的事情在此实现即可
-//            // TODO 提示：登陆MobileIMSDK服务器成功后的事情在此实现即可
-//            // TODO 提示：登陆MobileIMSDK服务器成功后的事情在此实现即可
-//            // TODO 提示：登陆MobileIMSDK服务器成功后的事情在此实现即可
-//            // TODO 提示：登陆MobileIMSDK服务器成功后的事情在此实现即可
-//            
-//            // 进入主界面
-////            [CurAppDelegate switchToMainViewController];
-//        }
-//        // 登陆失败
-//        else
-//        {
-//           
-//        }
-//        
-//        //## try to bug FIX ! 20160810：此observer本身执行完成才设置为nil，解决之前过早被nil而导致有时怎么也无法跳过登陆界面的问题
-//        // * 取消设置好服务端反馈的登陆结果观察者（当客户端收到服务端反馈过来的登陆消息时将被通知）【1】
-//        [[[IMClientManager sharedInstance] getBaseEventListener] setLoginOkForLaunchObserver:nil];
-//    };
-//}
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"getPlatformVersion" isEqualToString:call.method]) {
@@ -60,6 +32,9 @@
       else if ([call.method isEqualToString:@"login"]){
           [self login:call result:result];
       }
+      else if([call.method isEqualToString:@"sendMessage"]) {
+          [self sendMessage:call result:result];
+      }
      
     result(FlutterMethodNotImplemented);
       [ConfigEntity registerWithAppKey:@""];
@@ -70,23 +45,35 @@
 {
     if(!self._init && [call.arguments isKindOfClass:NSDictionary.class])
     {
-        NSString *serverIP = call.arguments[@"serverIP"];
-        NSString *serverPort = call.arguments[@"serverPort"];
+        NSDictionary *dic = call.arguments;
+        NSString *serverIP = dic[@"serverIP"];
+        NSNumber *serverPort = dic[@"serverPort"];
+        NSString *appKey = dic[@"appKey"];
         // 设置AppKey
-        [ConfigEntity registerWithAppKey:@"5418023dfd98c579b6001741"];
+        [ConfigEntity registerWithAppKey:appKey];
         
-        // 设置服务器ip和服务器端口
-      [ConfigEntity setServerIp:serverIP];
-      [ConfigEntity setServerPort:serverPort];
+        if (serverIP != nil && [serverPort isKindOfClass:[NSNumber class]]) {
+            // 设置服务器ip和服务器端口
+          [ConfigEntity setServerIp:serverIP];
+          [ConfigEntity setServerPort:[serverPort intValue]];
+            result(@{@"result":@YES});
+        }
+        else {
+            result(@{@"result":@NO});
+        }
+       
+        if([[dic allKeys] containsObject:@"senseMode"]) {
+            // RainbowCore核心IM框架的敏感度模式设置
+          [ConfigEntity setSenseMode:[dic[@"senseMode"] intValue]];
+        }
         
+        if([[dic allKeys] containsObject:@"debug"]) {
+            // 开启DEBUG信息输出
+          [ClientCoreSDK setENABLED_DEBUG:[dic[@"debug"] boolValue]];
+        }
         // 使用以下代码表示不绑定固定port（由系统自动分配），否则使用默认的7801端口
 //      [ConfigEntity setLocalUdpSendAndListeningPort:-1];
         
-        // RainbowCore核心IM框架的敏感度模式设置
-//      [ConfigEntity setSenseMode:SenseMode10S];
-        
-        // 开启DEBUG信息输出
-        [ClientCoreSDK setENABLED_DEBUG:YES];
         
         // 设置事件回调
       
@@ -96,30 +83,90 @@
         
         self._init = YES;
     }
+    else {
+        result(@{@"result":@NO});
+    }
 }
 
 - (void)login:(FlutterMethodCall*)call result:(FlutterResult)result {
     if([call.arguments isKindOfClass:NSDictionary.class]) {
         NSString *loginUserIdStr = call.arguments[@"loginUserIdStr"];
         NSString *loginTokenStr = call.arguments[@"loginTokenStr"];
+        NSString *extra = call.arguments[@"extra"];
         
-        // * 发送登陆数据包(提交登陆名和密码)
-        int code = [[LocalDataSender sharedInstance] sendLogin:loginUserIdStr withToken:loginTokenStr];
-        if(code == COMMON_CODE_OK)
-        {
-    //        [self E_showToastInfo:@"提示" withContent:@"登陆请求已发出。。。" onParent:self.view];
+        if(loginUserIdStr != nil && loginTokenStr != nil) {
+            // * 发送登陆数据包(提交登陆名和密码)
+            int code;
+            if(extra != nil) {
+              code  = [[LocalDataSender sharedInstance] sendLogin:loginUserIdStr withToken:loginTokenStr andExtra:extra];
+            }  
+            else {
+                code  = [[LocalDataSender sharedInstance] sendLogin:loginUserIdStr withToken:loginTokenStr];
+            }
+           
+            if(code == COMMON_CODE_OK)
+            {
+                result(@{@"result":@YES});
+            }
+            else
+            {
+                result(@{@"result":@NO});
+            }
         }
-        else
-        {
-    //        NSString *msg = [NSString stringWithFormat:@"登陆请求发送失败，错误码：%d", code];
-    //        [self E_showToastInfo:@"错误" withContent:msg onParent:self.view];
-    //        
-    //        // * 登陆信息没有成功发出时当然无条件取消显示登陆进度条
-    //        [self.onLoginProgress showProgressing:NO onParent:self.view];
+        else {
+            result(@{@"result":@NO});
         }
     }
     else {
+        result(@{@"result":@NO});
+    }    
+}
+
+- (void)logout:(FlutterMethodCall*)call result:(FlutterResult)result {
+    // 发出退出登陆请求包
+    int code = [[LocalDataSender sharedInstance] sendLoginout];
+    if(code == COMMON_CODE_OK)
+    {
+        result(@{@"result":@YES});
+    }
+    else
+    {
+        result(@{@"result":@NO});
+    }  
+    self._init = NO;
+}
+
+- (void)sendMessage:(FlutterMethodCall*)call result:(FlutterResult)result {
+    if([call.arguments isKindOfClass:NSDictionary.class]) {
+        NSString *loginUserIdStr = call.arguments[@"loginUserIdStr"];
+        NSString *loginTokenStr = call.arguments[@"loginTokenStr"];
+        NSString *extra = call.arguments[@"extra"];
         
+        if(loginUserIdStr != nil && loginTokenStr != nil) {
+            // * 发送登陆数据包(提交登陆名和密码)
+            int code;
+            if(extra != nil) {
+              code  = [[LocalDataSender sharedInstance] sendLogin:loginUserIdStr withToken:loginTokenStr andExtra:extra];
+            }  
+            else {
+                code  = [[LocalDataSender sharedInstance] sendLogin:loginUserIdStr withToken:loginTokenStr];
+            }
+           
+            if(code == COMMON_CODE_OK)
+            {
+                result(@{@"result":@YES});
+            }
+            else
+            {
+                result(@{@"result":@NO});
+            }
+        }
+        else {
+            result(@{@"result":@NO});
+        }
+    }
+    else {
+        result(@{@"result":@NO});
     }    
 }
     
@@ -134,28 +181,13 @@
         if (errorCode == 0)
         {
             NSLog(@"【DEBUG_UI】IM服务器登录/连接成功！");
-            
-            // UI显示
-//            [CurAppDelegate refreshConnecteStatus];
-//            [[CurAppDelegate getMainViewController] showIMInfo_green:[NSString stringWithFormat:@"登录成功,errorCode=%d", errorCode]];
+            [self.channel invokeMethod:@"loginSuccess" arguments:nil];
         }
         else
         {
             NSLog(@"【DEBUG_UI】IM服务器登录/连接失败，错误代码：%d", errorCode);
-            
-            // UI显示
-//            [[CurAppDelegate getMainViewController] showIMInfo_red:[NSString stringWithFormat:@"IM服务器登录/连接失败,code=%d", errorCode]];
+            [self.channel invokeMethod:@"loginFail" arguments:[NSNumber numberWithInt:errorCode]];
         }
-        
-        // 此观察者只有开启程序首次使用登陆界面时有用
-//        if(self.loginOkForLaunchObserver != nil)
-//        {
-//            self.loginOkForLaunchObserver(nil, [NSNumber numberWithInt:errorCode]);
-//            
-//            //## Try bug FIX! 20160810：上方的observer作为block代码应是被异步执行，此处立即设置nil的话，实测
-//            //##                        中会遇到怎么也登陆不进去的问题（因为此observer已被过早的nil了！）
-//    //        self.loginOkForLaunchObserver = nil;
-//        }
     }
 
     /*!
@@ -171,10 +203,7 @@
     - (void) onLinkClose:(int)errorCode
     {
         NSLog(@"【DEBUG_UI】与IM服务器的网络连接出错关闭了，error：%d", errorCode);
-        
-        // UI显示
-//        [CurAppDelegate refreshConnecteStatus];
-//        [[CurAppDelegate getMainViewController] showIMInfo_red:[NSString stringWithFormat:@"与IM服务器的连接已断开, 自动登陆/重连将启动! (%d)", errorCode]];
+        [self.channel invokeMethod:@"linkClose" arguments:[NSNumber numberWithInt:errorCode]];
     }
 
 #pragma mark - ChatMessageEvent
