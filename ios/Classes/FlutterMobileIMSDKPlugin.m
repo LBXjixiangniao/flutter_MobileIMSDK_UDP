@@ -2,6 +2,11 @@
 #import "ClientCoreSDK.h"
 #import "ConfigEntity.h"
 #import "LocalDataSender.h"
+#import "AutoReLoginDaemon.h"
+#import "KeepAliveDaemon.h"
+#import "QoS4ReciveDaemon.h"
+#import "QoS4SendDaemon.h"
+#import "NSMutableDictionary+Ext.h"
 
 @interface FlutterMobileIMSDKPlugin()
 /* MobileIMSDK是否已被初始化. true表示已初化完成，否则未初始化. */
@@ -23,9 +28,6 @@
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-  if ([@"getPlatformVersion" isEqualToString:call.method]) {
-    result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
-  } else {
       if([call.method isEqualToString:@"initMobileIMSDK"]) {
           [self initMobileIMSDK:call result:result];
       }
@@ -35,10 +37,12 @@
       else if([call.method isEqualToString:@"sendMessage"]) {
           [self sendMessage:call result:result];
       }
-     
-    result(FlutterMethodNotImplemented);
-      [ConfigEntity registerWithAppKey:@""];
-  }
+      else if([call.method isEqualToString:@"logout"]){
+          [self logout:call result:result];
+      }
+      else {
+          result(FlutterMethodNotImplemented);
+      }
 }
 
 - (void)initMobileIMSDK:(FlutterMethodCall*)call result:(FlutterResult)result 
@@ -48,9 +52,7 @@
         NSDictionary *dic = call.arguments;
         NSString *serverIP = dic[@"serverIP"];
         NSNumber *serverPort = dic[@"serverPort"];
-        NSString *appKey = dic[@"appKey"];
-        // 设置AppKey
-        [ConfigEntity registerWithAppKey:appKey];
+        
         
         if (serverIP != nil && [serverPort isKindOfClass:[NSNumber class]]) {
             // 设置服务器ip和服务器端口
@@ -69,10 +71,21 @@
         
         if([[dic allKeys] containsObject:@"debug"]) {
             // 开启DEBUG信息输出
-          [ClientCoreSDK setENABLED_DEBUG:[dic[@"debug"] boolValue]];
+            bool debug = [dic[@"debug"] boolValue];
+            if (debug) {
+                [[AutoReLoginDaemon sharedInstance] setDebugObserver:[self createObserverCompletionFor:@"AutoReLoginDaemonObserver"]];
+                [[KeepAliveDaemon sharedInstance] setDebugObserver:[self createObserverCompletionFor:@"KeepAliveDaemonObserver"]];
+                [[QoS4SendDaemon sharedInstance] setDebugObserver:[self createObserverCompletionFor:@"QoS4SendDaemonObserver"]];
+                [[QoS4ReciveDaemon sharedInstance] setDebugObserver:[self createObserverCompletionFor:@"QoS4ReciveDaemonObserver"]];
+            }
+          [ClientCoreSDK setENABLED_DEBUG:debug];
         }
-        // 使用以下代码表示不绑定固定port（由系统自动分配），否则使用默认的7801端口
-//      [ConfigEntity setLocalUdpSendAndListeningPort:-1];
+        
+        if([[dic allKeys] containsObject:@"appKey"]) {
+            NSString *appKey = dic[@"appKey"];
+            // 设置AppKey
+            [ConfigEntity registerWithAppKey:appKey];
+        }
         
         
         // 设置事件回调
@@ -88,11 +101,23 @@
     }
 }
 
+- (ObserverCompletion) createObserverCompletionFor:(NSString *)channelMethod
+{
+    __weak __typeof(self) weakSelf = self;
+    ObserverCompletion clp = ^(id observerble ,id data) {
+        int status = [(NSNumber *)data intValue];
+        [weakSelf.channel invokeMethod:channelMethod arguments:[NSNumber numberWithInt:status]];
+    };
+    
+    return clp;
+}
+
 - (void)login:(FlutterMethodCall*)call result:(FlutterResult)result {
     if([call.arguments isKindOfClass:NSDictionary.class]) {
-        NSString *loginUserIdStr = call.arguments[@"loginUserIdStr"];
-        NSString *loginTokenStr = call.arguments[@"loginTokenStr"];
-        NSString *extra = call.arguments[@"extra"];
+        NSDictionary *dic = call.arguments;
+        NSString *loginUserIdStr = dic[@"loginUserIdStr"];
+        NSString *loginTokenStr = dic[@"loginTokenStr"];
+        NSString *extra = [dic.allKeys containsObject:@"extra"] ? dic[@"extra"] : nil;
         
         if(loginUserIdStr != nil && loginTokenStr != nil) {
             // * 发送登陆数据包(提交登陆名和密码)
@@ -138,19 +163,17 @@
 
 - (void)sendMessage:(FlutterMethodCall*)call result:(FlutterResult)result {
     if([call.arguments isKindOfClass:NSDictionary.class]) {
-        NSString *loginUserIdStr = call.arguments[@"loginUserIdStr"];
-        NSString *loginTokenStr = call.arguments[@"loginTokenStr"];
-        NSString *extra = call.arguments[@"extra"];
+        NSDictionary *dic = call.arguments;
+        NSString *dataContent = dic[@"dataContent"];
+        NSString *toUserId = dic[@"toUserId"];
         
-        if(loginUserIdStr != nil && loginTokenStr != nil) {
+        NSString *fingerPrint = [dic.allKeys containsObject:@"fingerPrint"] ? dic[@"fingerPrint"] : nil;
+        bool qos = [dic.allKeys containsObject:@"qos"]?[dic[@"qos"] boolValue]:NO;
+        int typeu = [dic.allKeys containsObject:@"typeu"]?[dic[@"typeu"] intValue]:-1;
+        
+        if(dataContent != nil && toUserId != nil) {
             // * 发送登陆数据包(提交登陆名和密码)
-            int code;
-            if(extra != nil) {
-              code  = [[LocalDataSender sharedInstance] sendLogin:loginUserIdStr withToken:loginTokenStr andExtra:extra];
-            }  
-            else {
-                code  = [[LocalDataSender sharedInstance] sendLogin:loginUserIdStr withToken:loginTokenStr];
-            }
+            int code = [[LocalDataSender sharedInstance] sendCommonDataWithStr:dataContent toUserId:toUserId qos:qos fp:fingerPrint withTypeu:typeu];
            
             if(code == COMMON_CODE_OK)
             {
@@ -217,18 +240,10 @@
  * @param userid 消息的发送者id（RainbowCore框架中规定发送者id=“0”即表示是由服务端主动发过的，否则表示的是其它客户端发过来的消息）
  * @param dataContent 消息内容的文本表示形式
  */
-- (void) onRecieveMessage:(NSString *)fingerPrintOfProtocal withUserId:(NSString *)dwUserid andContent:(NSString *)dataContent andTypeu:(int)typeu
+- (void) onRecieveMessage:(NSString *)fingerPrintOfProtocal withUserId:(NSString *)userid andContent:(NSString *)dataContent andTypeu:(int)typeu
 {
-    NSLog(@"【DEBUG_UI】[%d]收到来自用户%@的消息:%@", typeu, dwUserid, dataContent);
-    
-    // UI显示
-    // Make toast with an image & title
-//    [[CurAppDelegate getMainView] makeToast:dataContent
-//                duration:3.0
-//                position:@"center"
-//                   title:[NSString stringWithFormat:@"%@说：", dwUserid]
-//                   image:[UIImage imageNamed:@"qzone_mark_img_myvoice.png"]];
-//    [[CurAppDelegate getMainViewController] showIMInfo_black:[NSString stringWithFormat:@"%@说：%@", dwUserid, dataContent]];
+    NSLog(@"【DEBUG_UI】[%d]收到来自用户%@的消息:%@", typeu, userid, dataContent);
+    [self.channel invokeMethod:@"onRecieveMessage" arguments:@{@"fingerPrint":fingerPrintOfProtocal,@"userId":userid,@"dataContent":dataContent,@"typeu":[NSNumber numberWithInt:typeu]}];
 }
 
 /*!
@@ -241,18 +256,7 @@
 - (void) onErrorResponse:(int)errorCode withErrorMsg:(NSString *)errorMsg
 {
     NSLog(@"【DEBUG_UI】收到服务端错误消息，errorCode=%d, errorMsg=%@", errorCode, errorMsg);
-    
-    // UI显示
-//    if(errorCode == ForS_RESPONSE_FOR_UNLOGIN)
-//    {
-//        NSString *content = [NSString stringWithFormat:@"服务端会话已失效，自动登陆/重连将启动! (%d)", errorCode];
-//        [[CurAppDelegate getMainViewController] showIMInfo_brightred:content];
-//    }
-//    else
-//    {
-//        NSString *content = [NSString stringWithFormat:@"Server反馈错误码：%d,errorMsg=%@", errorCode, errorMsg];
-//        [[CurAppDelegate getMainViewController] showIMInfo_red:content];
-//    }
+    [self.channel invokeMethod:@"onErrorResponse" arguments:@{@"errorMsg":errorMsg,@"errorCode":[NSNumber numberWithInt:errorCode]}];
 }
 
 #pragma mark - MessageQoSEvent
@@ -267,9 +271,20 @@
 - (void) messagesLost:(NSMutableArray*)lostMessages
 {
     NSLog(@"【DEBUG_UI】收到系统的未实时送达事件通知，当前共有%li个包QoS保证机制结束，判定为【无法实时送达】！", (unsigned long)[lostMessages count]);
-    
-//    // UI显示
-//    [[CurAppDelegate getMainViewController] showIMInfo_brightred:[NSString stringWithFormat:@"[消息未成功送达]共%li条!(网络状况不佳或对方id不存在)", [lostMessages count]]];
+    NSMutableArray *lostArray = [NSMutableArray new];
+    for (Protocal *item in lostMessages) {
+        [lostArray addObject:@{
+            @"bridge":@(item.bridge),
+            @"type":@(item.type),
+            @"dataContent":item.dataContent,
+            @"from":item.from,
+            @"to":item.to,
+            @"fp":item.fp,
+            @"QoS":@(item.QoS),
+            @"typeu":@(item.typeu),
+        }];
+    }
+    [self.channel invokeMethod:@"qosMessagesLost" arguments:lostMessages];
 }
 
 /*!
@@ -290,9 +305,7 @@
     if(theFingerPrint != nil)
     {
         NSLog(@"【DEBUG_UI】收到对方已收到消息事件的通知，fp=%@", theFingerPrint);
-        
-        // UI显示
-//        [[CurAppDelegate getMainViewController] showIMInfo_blue:[NSString stringWithFormat:@"[收到应答]%@", theFingerPrint]];
+        [self.channel invokeMethod:@"qosMessagesBeReceived" arguments:theFingerPrint];
     }
 }
 
