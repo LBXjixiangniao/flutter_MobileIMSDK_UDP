@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_MobileIMSDK/widget/mobile_im_sdk_login_debug.dart';
+
+import 'aaa.dart';
 
 void main() {
   runApp(MyApp());
@@ -15,7 +16,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MobileIMSDKLoginPage(),
+      home: Material(child: MobileIMSDKLoginPage(),),
     );
   }
 }

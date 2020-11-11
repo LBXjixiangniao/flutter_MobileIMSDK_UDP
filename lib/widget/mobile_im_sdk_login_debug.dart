@@ -28,7 +28,9 @@ class _MobileIMSDKLoginPageState extends State<MobileIMSDKLoginPage> {
           ),
           Row(
             children: [
-              TextField(),
+              TextField(
+                controller: ipController,
+              ),
               Text(':'),
               TextField(),
             ],
@@ -40,6 +42,7 @@ class _MobileIMSDKLoginPageState extends State<MobileIMSDKLoginPage> {
               TextField(),
             ],
           ),
+          Spacer(),
         ],
       ),
     );
