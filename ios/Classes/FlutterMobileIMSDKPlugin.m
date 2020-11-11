@@ -7,8 +7,11 @@
 #import "QoS4ReciveDaemon.h"
 #import "QoS4SendDaemon.h"
 #import "NSMutableDictionary+Ext.h"
+#import "ChatBaseEvent.h"
+#import "ChatMessageEvent.h"
+#import "MessageQoSEvent.h"
 
-@interface FlutterMobileIMSDKPlugin()
+@interface FlutterMobileIMSDKPlugin()<MessageQoSEvent,ChatMessageEvent,ChatBaseEvent>
 /* MobileIMSDK是否已被初始化. true表示已初化完成，否则未初始化. */
 @property (nonatomic) BOOL _init;
 /* 收到服务端的登陆完成反馈时要通知的观察者（因登陆是异步实现，本观察者将由
