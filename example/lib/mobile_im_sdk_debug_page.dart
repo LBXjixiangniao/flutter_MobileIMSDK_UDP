@@ -37,6 +37,7 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
   @override
   void initState() {
     super.initState();
+    initDaemonStatus();
     _reloginAnimationController = AnimationController(vsync: this, duration: Duration(seconds: 1));
     _keepAliveAnimationController = AnimationController(vsync: this, duration: Duration(seconds: 1));
     _qosSendAnimationController = AnimationController(vsync: this, duration: Duration(seconds: 1));
@@ -162,6 +163,45 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
     _streamSubscription?.cancel();
     _connectStatusStreamController?.close();
     super.dispose();
+  }
+
+  void initDaemonStatus() {
+    FlutterMobileIMSDK.isAutoReLoginRunning().then((value) {
+      if (value.result == true) {
+        if (value.value == true) {
+          _reloginAnimationController.value = 1;
+        } else {
+          _reloginAnimationController.value = 0;
+        }
+      }
+    });
+    FlutterMobileIMSDK.isKeepAliveRunning().then((value) {
+      if (value.result == true) {
+        if (value.value == true) {
+          _keepAliveAnimationController.value = 1;
+        } else {
+          _keepAliveAnimationController.value = 0;
+        }
+      }
+    });
+    FlutterMobileIMSDK.isQoS4SendDaemonRunning().then((value) {
+      if (value.result == true) {
+        if (value.value == true) {
+          _qosSendAnimationController.value = 1;
+        } else {
+          _qosSendAnimationController.value = 0;
+        }
+      }
+    });
+    FlutterMobileIMSDK.isQoS4ReciveDaemonRunning().then((value) {
+      if (value.result == true) {
+        if (value.value == true) {
+          _qosReceiveAnimationController.value = 1;
+        } else {
+          _qosReceiveAnimationController.value = 0;
+        }
+      }
+    });
   }
 
   void animate(ValueChanged<int> callback) {
@@ -429,8 +469,9 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
                     child: Container(
                       color: Colors.white,
                       child: ListView(
+                        reverse: true,
                         children: [
-                          ..._infoList.map(
+                          ..._infoList.reversed.map(
                             (e) => Text(
                               e.content,
                               style: TextStyle(
