@@ -194,7 +194,7 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
       FlutterMobileIMSDK.sendMessage(
               dataContent: messageController.text, toUserId: receiverIdController.text, qos: true)
           .then((value) {
-        if (value.result == false) {
+        if (value.result == false || value.value == false) {
           showToast('消息发送失败');
         }
       });
