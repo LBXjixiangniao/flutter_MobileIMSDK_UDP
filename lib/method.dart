@@ -1,60 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class MobileIMSDKRecieveMessageInfo {
-  String fingerPrint;
-  String userId;
-  String dataContent;
-  int typeu;
-
-  MobileIMSDKRecieveMessageInfo({this.fingerPrint, this.userId, this.dataContent, this.typeu});
-
-  MobileIMSDKRecieveMessageInfo.fromJson(Map<dynamic, dynamic> json) {
-    fingerPrint = json['fingerPrint'];
-    userId = json['userId'];
-    dataContent = json['dataContent'];
-    typeu = json['typeu'];
-  }
-}
-
-class MobileIMSDKRecieveProtocal {
-  String to;
-  String from;
-  String fp;
-  String dataContent;
-  int type;
-  int typeu;
-  bool bridge;
-  bool qoS;
-
-  MobileIMSDKRecieveProtocal({
-    this.to,
-    this.from,
-    this.dataContent,
-    this.fp,
-    this.type,
-    this.typeu,
-    this.bridge,
-    this.qoS,
-  });
-
-  MobileIMSDKRecieveProtocal.fromJson(Map<dynamic, dynamic> json) {
-    to = json['to'];
-    from = json['from'];
-    dataContent = json['dataContent'];
-    fp = json['fp'];
-    type = json['type'];
-    typeu = json['typeu'];
-    bridge = json['bridge'];
-    qoS = json['qoS'];
-  }
-}
+import 'model.dart';
 
 enum MobileIMSDKMethodType {
-  autoReLoginDaemonObserver,
-  keepAliveDaemonObserver,
-  qoS4SendDaemonObserver,
-  qoS4ReciveDaemonObserver,
   loginSuccess,
   loginFail,
   linkClose,
@@ -62,6 +11,12 @@ enum MobileIMSDKMethodType {
   onErrorResponse,
   qosMessagesLost,
   qosMessagesBeReceived,
+
+  ///以下四种在debug模式下才会有消息回来
+  autoReLoginDaemonObserver,
+  keepAliveDaemonObserver,
+  qoS4SendDaemonObserver,
+  qoS4ReciveDaemonObserver,
 }
 
 extension MobileIMSDKMethodTypeExtension on MobileIMSDKMethodType {
@@ -109,7 +64,7 @@ class FlutterMobileIMSDKMethod {
       case MobileIMSDKMethodType.qoS4ReciveDaemonObserver:
         return MobileIMSDKDaemonOberber(type: type, argument: call.arguments);
       case MobileIMSDKMethodType.loginSuccess:
-        return FlutterMobileIMSDKMethod(type, call.arguments);
+        return MobileIMSDKLoginSuccess(type: type, argument: call.arguments);
       case MobileIMSDKMethodType.loginFail:
         return MobileIMSDKLoginFail(type: type, argument: call.arguments);
       case MobileIMSDKMethodType.linkClose:
@@ -128,10 +83,20 @@ class FlutterMobileIMSDKMethod {
 }
 
 class MobileIMSDKDaemonOberber extends FlutterMobileIMSDKMethod {
+  //1、2正常状态，其他错误状态
   int status;
   MobileIMSDKDaemonOberber({@required MobileIMSDKMethodType type, dynamic argument}) : super(type, argument) {
     if (argument is int) {
       status = argument;
+    }
+  }
+}
+
+class MobileIMSDKLoginSuccess extends FlutterMobileIMSDKMethod {
+  MobileIMSDKLoginInfo info;
+  MobileIMSDKLoginSuccess({@required MobileIMSDKMethodType type, dynamic argument}) : super(type, argument) {
+    if (argument is Map) {
+      info = MobileIMSDKLoginInfo.fromJson(argument);
     }
   }
 }
@@ -156,8 +121,7 @@ class MobileIMSDKLinkClose extends FlutterMobileIMSDKMethod {
 
 class MobileIMSDKRecieveMessage extends FlutterMobileIMSDKMethod {
   MobileIMSDKRecieveMessageInfo info;
-  MobileIMSDKRecieveMessage({@required MobileIMSDKMethodType type, dynamic argument})
-      : super(type, argument) {
+  MobileIMSDKRecieveMessage({@required MobileIMSDKMethodType type, dynamic argument}) : super(type, argument) {
     if (argument is Map) {
       info = MobileIMSDKRecieveMessageInfo.fromJson(argument);
     }
@@ -165,19 +129,17 @@ class MobileIMSDKRecieveMessage extends FlutterMobileIMSDKMethod {
 }
 
 class MobileIMSDKErrorResponse extends FlutterMobileIMSDKMethod {
-  int errorCode;
-  MobileIMSDKErrorResponse({@required MobileIMSDKMethodType type, dynamic argument})
-      : super(type, argument) {
-    if (argument is int) {
-      errorCode = argument;
+  MobileIMSDKErrorResponseInfo info;
+  MobileIMSDKErrorResponse({@required MobileIMSDKMethodType type, dynamic argument}) : super(type, argument) {
+    if (argument is Map) {
+      info = MobileIMSDKErrorResponseInfo.fromJson(argument);
     }
   }
 }
 
 class MobileIMSDKMessagesLost extends FlutterMobileIMSDKMethod {
   List<MobileIMSDKRecieveProtocal> protocalList;
-  MobileIMSDKMessagesLost({@required MobileIMSDKMethodType type, dynamic argument})
-      : super(type, argument) {
+  MobileIMSDKMessagesLost({@required MobileIMSDKMethodType type, dynamic argument}) : super(type, argument) {
     if (argument is List) {
       protocalList = argument.map((e) => MobileIMSDKRecieveProtocal.fromJson(e)).toList();
     }

@@ -30,6 +30,20 @@
   [registrar addMethodCallDelegate:instance channel:channel];
 }
 
+- (NSDictionary *)getLoginInf {
+    NSMutableDictionary *argument = [NSMutableDictionary new];
+    [self addObjectForDic:argument key:@"currentLoginUserId" value:[ClientCoreSDK sharedInstance].currentLoginUserId];
+    [self addObjectForDic:argument key:@"currentLoginToken" value:[ClientCoreSDK sharedInstance].currentLoginToken];
+    [self addObjectForDic:argument key:@"currentLoginExtra" value:[ClientCoreSDK sharedInstance].currentLoginExtra];
+    return argument;
+}
+
+- (void)addObjectForDic:(NSMutableDictionary *)dic key:(NSString *)key value:(NSObject *)value {
+    if(value != nil) {
+        dic[key] = value;
+    }
+}
+
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
       if([call.method isEqualToString:@"initMobileIMSDK"]) {
           [self initMobileIMSDK:call result:result];
@@ -42,6 +56,24 @@
       }
       else if([call.method isEqualToString:@"logout"]){
           [self logout:call result:result];
+      }
+      else if([call.method isEqualToString:@"getConnectedStatus"]){
+          [self getConnectedStatus:call result:result];
+      }
+      else if([call.method isEqualToString:@"getCurrentLoginInfo"]) {
+          [self getCurrentLoginInfo:call result:result];
+      }
+      else if([call.method isEqualToString:@"isAutoReLoginRunning"]) {
+          [self isAutoReLoginRunning:call result:result];
+      }
+      else if([call.method isEqualToString:@"isKeepAliveRunning"]) {
+          [self isKeepAliveRunning:call result:result];
+      }
+      else if([call.method isEqualToString:@"isQoS4SendDaemonRunning"]) {
+          [self isQoS4SendDaemonRunning:call result:result];
+      }
+      else if([call.method isEqualToString:@"isQoS4ReciveDaemonRunning"]) {
+          [self isQoS4ReciveDaemonRunning:call result:result];
       }
       else {
           result(FlutterMethodNotImplemented);
@@ -118,19 +150,13 @@
 - (void)login:(FlutterMethodCall*)call result:(FlutterResult)result {
     if([call.arguments isKindOfClass:NSDictionary.class]) {
         NSDictionary *dic = call.arguments;
-        NSString *loginUserIdStr = dic[@"loginUserIdStr"];
-        NSString *loginTokenStr = dic[@"loginTokenStr"];
+        NSString *loginUserId = dic[@"loginUserId"];
+        NSString *loginToken = dic[@"loginToken"];
         NSString *extra = [dic.allKeys containsObject:@"extra"] ? dic[@"extra"] : nil;
         
-        if(loginUserIdStr != nil && loginTokenStr != nil) {
+        if(loginUserId != nil && loginToken != nil) {
             // * 发送登陆数据包(提交登陆名和密码)
-            int code;
-            if(extra != nil) {
-              code  = [[LocalDataSender sharedInstance] sendLogin:loginUserIdStr withToken:loginTokenStr andExtra:extra];
-            }  
-            else {
-                code  = [[LocalDataSender sharedInstance] sendLogin:loginUserIdStr withToken:loginTokenStr];
-            }
+            int code = [[LocalDataSender sharedInstance] sendLogin:loginUserId withToken:loginToken andExtra:extra];
            
             if(code == COMMON_CODE_OK)
             {
@@ -195,6 +221,41 @@
         result(@{@"result":@NO});
     }    
 }
+
+- (void)getConnectedStatus:(FlutterMethodCall*)call result:(FlutterResult)result {
+    // 获取与服务器连接状态
+    result(@{@"result":@YES, @"value":@([ClientCoreSDK sharedInstance].connectedToServer)});
+}
+
+- (void)getCurrentLoginInfo:(FlutterMethodCall*)call result:(FlutterResult)result {
+    // 获取当前登录信息
+    if([ClientCoreSDK sharedInstance].currentLoginUserId != nil && [ClientCoreSDK sharedInstance].currentLoginToken != nil) {
+        result(@{@"result":@YES,@"value":[self getLoginInf]});
+    }
+    else {
+        result(@{@"result":@NO});
+    }
+}
+
+- (void)isAutoReLoginRunning:(FlutterMethodCall*)call result:(FlutterResult)result {
+    // 自动登录重连是否正在运行
+    result(@{@"result":@YES, @"value":@([[AutoReLoginDaemon sharedInstance] isAutoReLoginRunning])});
+}
+
+- (void)isKeepAliveRunning:(FlutterMethodCall*)call result:(FlutterResult)result {
+    // keepAlive是否正在运行
+    result(@{@"result":@YES, @"value":@([[KeepAliveDaemon sharedInstance] isKeepAliveRunning])});
+}
+
+- (void)isQoS4SendDaemonRunning:(FlutterMethodCall*)call result:(FlutterResult)result {
+    // QoS4SendDaemon是否正在运行
+    result(@{@"result":@YES, @"value":@([[QoS4SendDaemon sharedInstance] isRunning])});
+}
+
+- (void)isQoS4ReciveDaemonRunning:(FlutterMethodCall*)call result:(FlutterResult)result {
+    // QoS4ReciveDaemon是否正在运行
+    result(@{@"result":@YES, @"value":@([[QoS4ReciveDaemon sharedInstance] isRunning])});
+}
     
 #pragma mark - ChatBaseEvent
     /*!
@@ -207,7 +268,7 @@
         if (errorCode == 0)
         {
             NSLog(@"【DEBUG_UI】IM服务器登录/连接成功！");
-            [self.channel invokeMethod:@"loginSuccess" arguments:nil];
+            [self.channel invokeMethod:@"loginSuccess" arguments:[self getLoginInf]];
         }
         else
         {
@@ -259,7 +320,7 @@
 - (void) onErrorResponse:(int)errorCode withErrorMsg:(NSString *)errorMsg
 {
     NSLog(@"【DEBUG_UI】收到服务端错误消息，errorCode=%d, errorMsg=%@", errorCode, errorMsg);
-    [self.channel invokeMethod:@"onErrorResponse" arguments:@{@"errorMsg":errorMsg,@"errorCode":[NSNumber numberWithInt:errorCode]}];
+    [self.channel invokeMethod:@"onErrorResponse" arguments:@{@"errorMsg":errorMsg,@"errorCode":[NSNumber numberWithInt:errorCode],@"isUnlogin":@(errorCode == ForS_RESPONSE_FOR_UNLOGIN)}];
 }
 
 #pragma mark - MessageQoSEvent
@@ -275,19 +336,22 @@
 {
     NSLog(@"【DEBUG_UI】收到系统的未实时送达事件通知，当前共有%li个包QoS保证机制结束，判定为【无法实时送达】！", (unsigned long)[lostMessages count]);
     NSMutableArray *lostArray = [NSMutableArray new];
-    for (Protocal *item in lostMessages) {
-        [lostArray addObject:@{
-            @"bridge":@(item.bridge),
-            @"type":@(item.type),
-            @"dataContent":item.dataContent,
-            @"from":item.from,
-            @"to":item.to,
-            @"fp":item.fp,
-            @"QoS":@(item.QoS),
-            @"typeu":@(item.typeu),
-        }];
+    for (id item in lostMessages) {
+        if([item isKindOfClass:Protocal.class]) {
+            Protocal *protocal = item;
+            NSMutableDictionary *dic = [NSMutableDictionary new];
+            [self addObjectForDic:dic key:@"bridge" value:@(protocal.bridge)];
+            [self addObjectForDic:dic key:@"type" value:@(protocal.type)];
+            [self addObjectForDic:dic key:@"dataContent" value:protocal.dataContent];
+            [self addObjectForDic:dic key:@"from" value:protocal.from];
+            [self addObjectForDic:dic key:@"to" value:protocal.to];
+            [self addObjectForDic:dic key:@"fp" value:protocal.fp];
+            [self addObjectForDic:dic key:@"QoS" value:@(protocal.QoS)];
+            [self addObjectForDic:dic key:@"typeu" value:@(protocal.typeu)];
+            [lostArray addObject:dic];
+        }
     }
-    [self.channel invokeMethod:@"qosMessagesLost" arguments:lostMessages];
+    [self.channel invokeMethod:@"qosMessagesLost" arguments:lostArray];
 }
 
 /*!
