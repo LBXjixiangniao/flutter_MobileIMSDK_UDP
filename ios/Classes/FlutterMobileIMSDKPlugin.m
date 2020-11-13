@@ -30,7 +30,7 @@
   [registrar addMethodCallDelegate:instance channel:channel];
 }
 
-- (NSDictionary *)getLoginInf {
+- (NSDictionary *)getLoginInfo {
     NSMutableDictionary *argument = [NSMutableDictionary new];
     [self addObjectForDic:argument key:@"currentLoginUserId" value:[ClientCoreSDK sharedInstance].currentLoginUserId];
     [self addObjectForDic:argument key:@"currentLoginToken" value:[ClientCoreSDK sharedInstance].currentLoginToken];
@@ -230,7 +230,7 @@
 - (void)getCurrentLoginInfo:(FlutterMethodCall*)call result:(FlutterResult)result {
     // 获取当前登录信息
     if([ClientCoreSDK sharedInstance].currentLoginUserId != nil && [ClientCoreSDK sharedInstance].currentLoginToken != nil) {
-        result(@{@"result":@YES,@"value":[self getLoginInf]});
+        result(@{@"result":@YES,@"value":[self getLoginInfo]});
     }
     else {
         result(@{@"result":@NO});
@@ -268,7 +268,7 @@
         if (errorCode == 0)
         {
             NSLog(@"【DEBUG_UI】IM服务器登录/连接成功！");
-            [self.channel invokeMethod:@"loginSuccess" arguments:[self getLoginInf]];
+            [self.channel invokeMethod:@"loginSuccess" arguments:[self getLoginInfo]];
         }
         else
         {

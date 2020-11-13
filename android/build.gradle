@@ -30,6 +30,10 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -37,5 +41,5 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     // MobileIMSDK的SDK库
     implementation files('libs/MobileIMSDKServer_META.jar')
-    implementation files('libs/MobileIMSDK4a_tcp.jar')
+    implementation files('libs/MobileIMSDK4a_udp.jar')
 }
