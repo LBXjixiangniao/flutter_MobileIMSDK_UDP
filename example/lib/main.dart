@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'aaa.dart';
+import 'mobile_im_sdk_login_page.dart';
 
 void main() {
   runApp(MyApp());
