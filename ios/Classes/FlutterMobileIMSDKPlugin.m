@@ -181,11 +181,11 @@
     int code = [[LocalDataSender sharedInstance] sendLoginout];
     if(code == COMMON_CODE_OK)
     {
-        result(@{@"result":@YES});
+        result(@{@"result":@YES,@"value":[NSNumber numberWithInt:code]});
     }
     else
     {
-        result(@{@"result":@NO});
+        result(@{@"result":@NO,@"value":[NSNumber numberWithInt:code]});
     }  
     self._init = NO;
 }

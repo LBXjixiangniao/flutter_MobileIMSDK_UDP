@@ -80,13 +80,9 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
           if (event is MobileIMSDKErrorResponse) {
             setState(() {
               if (event.info?.isUnlogin == true) {
-                _infoList.add(
-                    _IMInfo(content: '服务端会话已失效，自动登陆/重连将启动! ,code=${event.info.errorCode}', color: Colors.red[200]));
+                _infoList.add(_IMInfo(content: '服务端会话已失效，自动登陆/重连将启动! ,code=${event.info.errorCode}', color: Colors.red[200]));
               } else {
-                _infoList.add(_IMInfo(
-                    content:
-                        '服务端会话已失效，自动登陆/重连将启动! ,Server反馈错误码：code=${event.info.errorCode},errorMsg=${event.info.errorMsg}',
-                    color: Colors.red));
+                _infoList.add(_IMInfo(content: '服务端会话已失效，自动登陆/重连将启动! ,Server反馈错误码：code=${event.info.errorCode},errorMsg=${event.info.errorMsg}', color: Colors.red));
               }
             });
           }
@@ -94,8 +90,7 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
         case MobileIMSDKMethodType.qosMessagesLost:
           if (event is MobileIMSDKMessagesLost) {
             setState(() {
-              _infoList.add(_IMInfo(
-                  content: '[消息未成功送达]共${event.protocalList?.length}条!(网络状况不佳或对方id不存在)', color: Colors.red[200]));
+              _infoList.add(_IMInfo(content: '[消息未成功送达]共${event.protocalList?.length}条!(网络状况不佳或对方id不存在)', color: Colors.red[200]));
             });
           }
           break;
@@ -228,12 +223,9 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
       showToast('请输入消息内容');
     } else {
       setState(() {
-        _infoList
-            .add(_IMInfo(content: '我对${receiverIdController.text}说：${messageController.text}', color: Colors.black));
+        _infoList.add(_IMInfo(content: '我对${receiverIdController.text}说：${messageController.text}', color: Colors.black));
       });
-      FlutterMobileIMSDK.sendMessage(
-              dataContent: messageController.text, toUserId: receiverIdController.text, qos: true)
-          .then((value) {
+      FlutterMobileIMSDK.sendMessage(dataContent: messageController.text, toUserId: receiverIdController.text, qos: true).then((value) {
         if (value.result == false || value.value == false) {
           showToast('消息发送失败');
         }
@@ -276,18 +268,18 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromRGBO(239, 239, 245, 1),
-      appBar: AppBar(
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        title: Text('MobileIMSDK_UDP Demo'),
-      ),
-      body: GestureDetector(
-        onTap: (){
-          FocusScope.of(context).requestFocus(FocusNode());
-        },
-              child: StatefulBuilder(
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
+      child: Scaffold(
+        backgroundColor: Color.fromRGBO(239, 239, 245, 1),
+        appBar: AppBar(
+          centerTitle: true,
+          automaticallyImplyLeading: false,
+          title: Text('MobileIMSDK_UDP Demo'),
+        ),
+        body: StatefulBuilder(
           builder: (ctx, _) {
             _scaffoldState = Scaffold.of(ctx);
             return SafeArea(

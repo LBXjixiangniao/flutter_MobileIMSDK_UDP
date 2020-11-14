@@ -1,8 +1,11 @@
 package com.lbx.flutter_MobileIMSDK;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -172,7 +175,14 @@ public class FlutterMobileIMSDKPlugin implements FlutterPlugin, MethodCallHandle
       if(arg != null) {
         int status = (int) arg;
         if(weakSelf.get() != null) {
-          weakSelf.get().channel.invokeMethod(methodName,status);
+          Handler mainHandler = new Handler(Looper.getMainLooper());
+          mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              //已在主线程中，可以更新UI
+              weakSelf.get().channel.invokeMethod(methodName,status);
+            }
+          });
         }
       }
     };
@@ -252,6 +262,7 @@ public class FlutterMobileIMSDKPlugin implements FlutterPlugin, MethodCallHandle
         else {
           resultDic.put("result", Boolean.FALSE);
         }
+        resultDic.put("value", code);
         result.success(resultDic);
       }
     }.execute();

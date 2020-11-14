@@ -1,4 +1,4 @@
-/*
+/**
  * 对应MobileIMSDK中Protocal类
  */
 
@@ -35,7 +35,7 @@ class MobileIMSDKRecieveProtocal {
   }
 }
 
-/*
+/**
  * 收到的消息
  */
 class MobileIMSDKRecieveMessageInfo {
@@ -54,7 +54,7 @@ class MobileIMSDKRecieveMessageInfo {
   }
 }
 
-/*
+/**
  * 收到的消息
  */
 class MobileIMSDKErrorResponseInfo {
@@ -71,7 +71,7 @@ class MobileIMSDKErrorResponseInfo {
   }
 }
 
-/*
+/**
  * MobileIMSDK登录信息
  */
 class MobileIMSDKLoginInfo {

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'model.dart';
 
+///flutter层定义的method type
 enum MobileIMSDKMethodType {
   loginSuccess,
   loginFail,
@@ -12,13 +13,17 @@ enum MobileIMSDKMethodType {
   qosMessagesLost,
   qosMessagesBeReceived,
 
-  ///以下四种在debug模式下才会有消息回来
+  ///注意：设置debug模式下才会监听该消息
   autoReLoginDaemonObserver,
+  ///注意：设置debug模式下才会监听该消息
   keepAliveDaemonObserver,
+  ///注意：设置debug模式下才会监听该消息
   qoS4SendDaemonObserver,
+  ///注意：设置debug模式下才会监听该消息
   qoS4ReciveDaemonObserver,
 }
 
+///将native中channel.invokeMethod传递过来的事件转换成MobileIMSDKMethodType
 extension MobileIMSDKMethodTypeExtension on MobileIMSDKMethodType {
   static fromMethodCallName(String name) {
     switch (name) {
@@ -48,6 +53,7 @@ extension MobileIMSDKMethodTypeExtension on MobileIMSDKMethodType {
     return null;
   }
 }
+
 
 class FlutterMobileIMSDKMethod {
   MobileIMSDKMethodType type;

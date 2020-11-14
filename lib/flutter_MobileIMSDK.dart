@@ -24,7 +24,7 @@ class FlutterMobileIMSDKResult {
     value = json['value'];
   }
 }
-/*
+/**
 SenseMode3S
 此模式下：
 * KeepAlive心跳问隔为3秒；
@@ -71,8 +71,9 @@ class FlutterMobileIMSDK {
     }
   }
 
-  /*
+  /**
  * 初始化SDK
+ * 
  * serverIP:服务器ip地址
  * serverPort：服务器端口号
  * appKey：根据社区回答，暂时无用
@@ -107,8 +108,9 @@ class FlutterMobileIMSDK {
         .then((value) => FlutterMobileIMSDKResult.fromJson(value));
   }
 
-  /*
+  /**
  * 发送登陆信息.本方法中已经默认进行了核心库的初始化，因而使用本类完成登陆时，就无需单独 调用初始化方法[ClientCoreSDK initCore]了。
+ * 
  * loginUserId:提交到服务端的准一id，保证唯一就可以通信，可能是登陆用户名、 也可能是任意不重复的id等，具体意义由业务层决定
  * loginToken:提交到服务端用于身份鉴别和合法性检查的token，它可能是登陆密码 ，也可能是通过前置单点登陆接口拿到的token等，具体意义由业务层决定
  * extra:额外信息字符串，可为null。本字段目前为保留字段，供上层应用自行放置需要的内容
@@ -132,7 +134,7 @@ class FlutterMobileIMSDK {
         .then((value) => FlutterMobileIMSDKResult.fromJson(value));
   }
 
-  /*
+  /**
  * 发送注销登陆信息。此方法的调用将被本库理解为退出库的使用，本方法将会额外调 用资源释放方法 [ClientCoreSDK releaseCore]，以保证资源释放。
  * 
  * result->{
@@ -146,8 +148,9 @@ class FlutterMobileIMSDK {
         .then((value) => FlutterMobileIMSDKResult.fromJson(value));
   }
 
-/*
+/**
  * 通用数据发送方法（sdk默认不需要Qos支持）。
+ * 
  * dataContent:要发送的数据内容（字符串方式组织）
  * toUserId:要发送到的目标用户id
  * fingerPrint:QoS机制中要用到的指纹码（即消息包唯一id）
@@ -181,8 +184,9 @@ class FlutterMobileIMSDK {
         .then((value) => FlutterMobileIMSDKResult.fromJson(value));
   }
 
-  /*
+  /**
  * 获取与服务器连接状态
+ * 
  * result->{
  * result:bool, //标识接口调用是否成功
  * value:bool,//接口返回的连接状态，true表示通信正常，false表示断开连接
@@ -191,7 +195,7 @@ class FlutterMobileIMSDK {
     return _channel.invokeMethod('getConnectedStatus').then((value) => FlutterMobileIMSDKResult.fromJson(value));
   }
 
-  /*
+  /**
  * 获取当前登录信息
  * result->{
  * result:bool, //标识接口调用是否成功
@@ -207,8 +211,9 @@ class FlutterMobileIMSDK {
     });
   }
 
-  /*
+  /**
  * 自动登录重连进程是否正在运行
+ * 
  * result->{
  * result:bool, //标识接口调用是否成功
  * value:bool,//接口返回的连接状态，true表示进程正在运行，false表示程正不在运行状态
@@ -217,7 +222,7 @@ class FlutterMobileIMSDK {
     return _channel.invokeMethod('isAutoReLoginRunning').then((value) => FlutterMobileIMSDKResult.fromJson(value));
   }
 
-  /*
+  /**
  * keepAlive进程是否正在运行
  * result->{
  * result:bool, //标识接口调用是否成功
@@ -227,8 +232,9 @@ class FlutterMobileIMSDK {
     return _channel.invokeMethod('isKeepAliveRunning').then((value) => FlutterMobileIMSDKResult.fromJson(value));
   }
 
-  /*
+  /**
  * QoS4Send进程是否正在运行
+ * 
  * result->{
  * result:bool, //标识接口调用是否成功
  * value:bool,//接口返回的连接状态，true表示进程正在运行，false表示程正不在运行状态
@@ -237,8 +243,9 @@ class FlutterMobileIMSDK {
     return _channel.invokeMethod('isQoS4SendDaemonRunning').then((value) => FlutterMobileIMSDKResult.fromJson(value));
   }
 
-  /*
+  /**
  * QoS4Recive进程是否正在运行
+ * 
  * result->{
  * result:bool, //标识接口调用是否成功
  * value:bool,//接口返回的连接状态，true表示进程正在运行，false表示程正不在运行状态
