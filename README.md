@@ -1,6 +1,6 @@
 # flutter_MobileIMSDK
 
-开源项目[MobileIMSDK](https://github.com/JackJiang2011/MobileIMSDK) 移动端的flutter封装
+开源项目[MobileIMSDK](https://github.com/JackJiang2011/MobileIMSDK) 移动端的flutter封装。当前只对接了UDP的
 
 ## 用法
 
@@ -44,7 +44,7 @@ FlutterMobileIMSDK.login(loginUserId: accountController.text, loginToken: passwo
           });
 ```
 
-登录成功由移步回调确定
+登录成功由异步回调确定
 ```
 FlutterMobileIMSDK.setMethodCallHandler(handler: (method) {
       if (method is MobileIMSDKLoginSuccess) {
@@ -53,5 +53,122 @@ FlutterMobileIMSDK.setMethodCallHandler(handler: (method) {
         //登录失败
       }
     });
+```
+
+### 发送消息
+```
+/**
+ * 通用数据发送方法（sdk默认不需要Qos支持）。
+ * 
+ * dataContent:要发送的数据内容（字符串方式组织）
+ * toUserId:要发送到的目标用户id
+ * fingerPrint:QoS机制中要用到的指纹码（即消息包唯一id）
+ * qos:true表示需QoS机制支持，不则不需要
+ * typeu:业务层自定义type类型
+ * 
+ * result->{
+ * result:bool, //标识接口调用是否成功
+*/
+FlutterMobileIMSDK.sendMessage(dataContent: '消息内容', toUserId: '接收者id，上面登录方法的userId', qos: true).then((value) {
+        if (value.result == false || value.value == false) {
+          //消息发送失败
+        }
+});
+```
+如果使用qos，则消息是否送达由异步回调确定
+```
+FlutterMobileIMSDK.setMethodCallHandler(handler: (method) {
+      if (method is MobileIMSDKRecieveMessage) {
+        //收到消息，消息相关内容为method.info
+        //消息体包含字段如下
+        //String fingerPrint;
+        //String userId;
+        //String dataContent;
+        //int typeu;
+      }
+    });
+```
+
+### 接收消息
+```
+FlutterMobileIMSDK.setMethodCallHandler(handler: (method) {
+      if (method is MobileIMSDKMessagesBeReceived) {
+        //消息送达，具体判断是哪条消息，由method.fingerPrint确定
+      }
+    });
+```
+
+### 退出登录
+```
+FlutterMobileIMSDK.logout().then((value) {
+      if (value.result == true) {
+        //退出登录成功
+      } else {
+        //退出登录失败
+      }
+    });
+```
+
+### debug的时候获取相关线程状态
+```
+FlutterMobileIMSDK.isAutoReLoginRunning().then((value) {
+      if (value.result == true) {
+        if (value.value == true) {
+          //自动登陆线程正在运行
+        } else {
+          
+        }
+      }
+    });
+    FlutterMobileIMSDK.isKeepAliveRunning().then((value) {
+      if (value.result == true) {
+        if (value.value == true) {
+          
+        } else {
+          
+        }
+      }
+    });
+    FlutterMobileIMSDK.isQoS4SendDaemonRunning().then((value) {
+      if (value.result == true) {
+        if (value.value == true) {
+          
+        } else {
+          
+        }
+      }
+    });
+    FlutterMobileIMSDK.isQoS4ReciveDaemonRunning().then((value) {
+      if (value.result == true) {
+        if (value.value == true) {
+          
+        } else {
+          
+        }
+      }
+    });
+```
+### FlutterMobileIMSDK.setMethodCallHandler
+FlutterMobileIMSDK.setMethodCallHandler处理的所有异步消息类型如下
+
+```
+enum MobileIMSDKMethodType {
+  loginSuccess,
+  loginFail,
+  linkClose,
+  onRecieveMessage,
+  onErrorResponse,
+  qosMessagesLost,
+  qosMessagesBeReceived,
+
+  ///注意：设置debug模式下才会监听该消息
+  autoReLoginDaemonObserver,
+  ///注意：设置debug模式下才会监听该消息
+  keepAliveDaemonObserver,
+  ///注意：设置debug模式下才会监听该消息
+  qoS4SendDaemonObserver,
+  ///注意：设置debug模式下才会监听该消息
+  qoS4ReciveDaemonObserver,
+}
 ```
 
