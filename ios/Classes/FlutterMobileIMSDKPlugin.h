@@ -1,5 +1,4 @@
 #import <Flutter/Flutter.h>
 
-@interface FlutterMobileIMSDKPlugin : NSObject<FlutterPlugin>
-
+@interface FlutterMobileImsdkPlugin : NSObject<FlutterPlugin>
 @end

@@ -1,4 +1,4 @@
-group 'com.lbx.flutter_MobileIMSDK'
+group 'com.lbx.flutter_mobile_imsdk'
 version '1.0'
 
 buildscript {
@@ -35,6 +35,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     // MobileIMSDK的依赖库

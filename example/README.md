@@ -1,6 +1,6 @@
-# flutter_MobileIMSDK_example
+# flutter_mobile_imsdk_example
 
-Demonstrates how to use the flutter_MobileIMSDK plugin.
+Demonstrates how to use the flutter_mobile_imsdk plugin.
 
 ## Getting Started
 

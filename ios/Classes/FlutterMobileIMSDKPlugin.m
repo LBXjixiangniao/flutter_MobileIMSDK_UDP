@@ -1,4 +1,4 @@
-#import "FlutterMobileIMSDKPlugin.h"
+#import "FlutterMobileImsdkPlugin.h"
 #import "ClientCoreSDK.h"
 #import "ConfigEntity.h"
 #import "LocalDataSender.h"
@@ -11,7 +11,7 @@
 #import "ChatMessageEvent.h"
 #import "MessageQoSEvent.h"
 
-@interface FlutterMobileIMSDKPlugin()<MessageQoSEvent,ChatMessageEvent,ChatBaseEvent>
+@interface FlutterMobileImsdkPlugin()<MessageQoSEvent,ChatMessageEvent,ChatBaseEvent>
 /* MobileIMSDK是否已被初始化. true表示已初化完成，否则未初始化. */
 @property (nonatomic) BOOL _init;
 /* 收到服务端的登陆完成反馈时要通知的观察者（因登陆是异步实现，本观察者将由
@@ -20,12 +20,12 @@
 @property (nonatomic,strong) FlutterMethodChannel *channel;
 
 @end
-@implementation FlutterMobileIMSDKPlugin
+@implementation FlutterMobileImsdkPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   FlutterMethodChannel* channel = [FlutterMethodChannel
-      methodChannelWithName:@"flutter_MobileIMSDK"
+      methodChannelWithName:@"flutter_mobile_imsdk"
             binaryMessenger:[registrar messenger]];
-  FlutterMobileIMSDKPlugin* instance = [[FlutterMobileIMSDKPlugin alloc] init];
+  FlutterMobileImsdkPlugin* instance = [[FlutterMobileImsdkPlugin alloc] init];
     instance.channel = channel;
   [registrar addMethodCallDelegate:instance channel:channel];
 }
@@ -377,3 +377,4 @@
 }
 
 @end
+

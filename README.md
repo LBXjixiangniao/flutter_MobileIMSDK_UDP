@@ -1,4 +1,4 @@
-# flutter_MobileIMSDK
+# flutter_mobile_imsdk
 
 开源项目[MobileIMSDK](https://github.com/JackJiang2011/MobileIMSDK) 移动端的flutter封装。当前只对接了UDP的
 
@@ -18,7 +18,7 @@
  * result->{
  * result:bool, //标识接口调用是否成功
 */
-FlutterMobileIMSDK.initMobileIMSDK(
+FlutterMobileImsdk.initMobileIMSDK(
               serverIP: '服务端ip', serverPort:服务端端口号 )
           .then((value) {
         if (value.result == true) {
@@ -34,7 +34,7 @@ FlutterMobileIMSDK.initMobileIMSDK(
 ### 登录
 登录前一定要先初始化sdk，设置ip和端口号
 ```
-FlutterMobileIMSDK.login(loginUserId: accountController.text, loginToken: passwordController.text)
+FlutterMobileImsdk.login(loginUserId: accountController.text, loginToken: passwordController.text)
               .then((value) {
             if (value.result == false) {
               //登录失败
@@ -46,7 +46,7 @@ FlutterMobileIMSDK.login(loginUserId: accountController.text, loginToken: passwo
 
 登录成功由异步回调确定
 ```
-FlutterMobileIMSDK.setMethodCallHandler(handler: (method) {
+FlutterMobileImsdk.setMethodCallHandler(handler: (method) {
       if (method is MobileIMSDKLoginSuccess) {
         //登录成功
       } else if (method is MobileIMSDKLoginFail) {
@@ -69,7 +69,7 @@ FlutterMobileIMSDK.setMethodCallHandler(handler: (method) {
  * result->{
  * result:bool, //标识接口调用是否成功
 */
-FlutterMobileIMSDK.sendMessage(dataContent: '消息内容', toUserId: '接收者id，上面登录方法的userId', qos: true).then((value) {
+FlutterMobileImsdk.sendMessage(dataContent: '消息内容', toUserId: '接收者id，上面登录方法的userId', qos: true).then((value) {
         if (value.result == false || value.value == false) {
           //消息发送失败
         }
@@ -77,7 +77,7 @@ FlutterMobileIMSDK.sendMessage(dataContent: '消息内容', toUserId: '接收者
 ```
 如果使用qos，则消息是否送达由异步回调确定
 ```
-FlutterMobileIMSDK.setMethodCallHandler(handler: (method) {
+FlutterMobileImsdk.setMethodCallHandler(handler: (method) {
       if (method is MobileIMSDKRecieveMessage) {
         //收到消息，消息相关内容为method.info
         //消息体包含字段如下
@@ -91,7 +91,7 @@ FlutterMobileIMSDK.setMethodCallHandler(handler: (method) {
 
 ### 接收消息
 ```
-FlutterMobileIMSDK.setMethodCallHandler(handler: (method) {
+FlutterMobileImsdk.setMethodCallHandler(handler: (method) {
       if (method is MobileIMSDKMessagesBeReceived) {
         //消息送达，具体判断是哪条消息，由method.fingerPrint确定
       }
@@ -100,7 +100,7 @@ FlutterMobileIMSDK.setMethodCallHandler(handler: (method) {
 
 ### 退出登录
 ```
-FlutterMobileIMSDK.logout().then((value) {
+FlutterMobileImsdk.logout().then((value) {
       if (value.result == true) {
         //退出登录成功
       } else {
@@ -111,7 +111,7 @@ FlutterMobileIMSDK.logout().then((value) {
 
 ### debug的时候获取相关线程状态
 ```
-FlutterMobileIMSDK.isAutoReLoginRunning().then((value) {
+FlutterMobileImsdk.isAutoReLoginRunning().then((value) {
       if (value.result == true) {
         if (value.value == true) {
           //自动登陆线程正在运行
@@ -120,7 +120,7 @@ FlutterMobileIMSDK.isAutoReLoginRunning().then((value) {
         }
       }
     });
-    FlutterMobileIMSDK.isKeepAliveRunning().then((value) {
+    FlutterMobileImsdk.isKeepAliveRunning().then((value) {
       if (value.result == true) {
         if (value.value == true) {
           
@@ -129,7 +129,7 @@ FlutterMobileIMSDK.isAutoReLoginRunning().then((value) {
         }
       }
     });
-    FlutterMobileIMSDK.isQoS4SendDaemonRunning().then((value) {
+    FlutterMobileImsdk.isQoS4SendDaemonRunning().then((value) {
       if (value.result == true) {
         if (value.value == true) {
           
@@ -138,7 +138,7 @@ FlutterMobileIMSDK.isAutoReLoginRunning().then((value) {
         }
       }
     });
-    FlutterMobileIMSDK.isQoS4ReciveDaemonRunning().then((value) {
+    FlutterMobileImsdk.isQoS4ReciveDaemonRunning().then((value) {
       if (value.result == true) {
         if (value.value == true) {
           
@@ -148,8 +148,8 @@ FlutterMobileIMSDK.isAutoReLoginRunning().then((value) {
       }
     });
 ```
-### FlutterMobileIMSDK.setMethodCallHandler
-FlutterMobileIMSDK.setMethodCallHandler处理的所有异步消息类型如下
+### FlutterMobileImsdk.setMethodCallHandler
+FlutterMobileImsdk.setMethodCallHandler处理的所有异步消息类型如下
 
 ```
 enum MobileIMSDKMethodType {
@@ -171,4 +171,6 @@ enum MobileIMSDKMethodType {
   qoS4ReciveDaemonObserver,
 }
 ```
+
+
 

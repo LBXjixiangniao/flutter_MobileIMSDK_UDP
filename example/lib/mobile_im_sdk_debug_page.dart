@@ -1,8 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_MobileIMSDK/flutter_MobileIMSDK.dart';
-import 'package:flutter_MobileIMSDK/model.dart';
+import 'package:flutter_mobile_imsdk/flutter_mobile_imsdk.dart';
 
 class _IMInfo {
   final String content;
@@ -161,7 +160,7 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
   }
 
   void initDaemonStatus() {
-    FlutterMobileIMSDK.isAutoReLoginRunning().then((value) {
+    FlutterMobileImsdk.isAutoReLoginRunning().then((value) {
       if (value.result == true) {
         if (value.value == true) {
           _reloginAnimationController.value = 1;
@@ -170,7 +169,7 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
         }
       }
     });
-    FlutterMobileIMSDK.isKeepAliveRunning().then((value) {
+    FlutterMobileImsdk.isKeepAliveRunning().then((value) {
       if (value.result == true) {
         if (value.value == true) {
           _keepAliveAnimationController.value = 1;
@@ -179,7 +178,7 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
         }
       }
     });
-    FlutterMobileIMSDK.isQoS4SendDaemonRunning().then((value) {
+    FlutterMobileImsdk.isQoS4SendDaemonRunning().then((value) {
       if (value.result == true) {
         if (value.value == true) {
           _qosSendAnimationController.value = 1;
@@ -188,7 +187,7 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
         }
       }
     });
-    FlutterMobileIMSDK.isQoS4ReciveDaemonRunning().then((value) {
+    FlutterMobileImsdk.isQoS4ReciveDaemonRunning().then((value) {
       if (value.result == true) {
         if (value.value == true) {
           _qosReceiveAnimationController.value = 1;
@@ -209,7 +208,7 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
   }
 
   void refreshConnectedStatus() {
-    FlutterMobileIMSDK.getConnectedStatus().then((value) {
+    FlutterMobileImsdk.getConnectedStatus().then((value) {
       if (value.result == true) {
         _connectStatusStreamController.add(value.value == true);
       }
@@ -225,7 +224,7 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
       setState(() {
         _infoList.add(_IMInfo(content: '我对${receiverIdController.text}说：${messageController.text}', color: Colors.black));
       });
-      FlutterMobileIMSDK.sendMessage(dataContent: messageController.text, toUserId: receiverIdController.text, qos: true).then((value) {
+      FlutterMobileImsdk.sendMessage(dataContent: messageController.text, toUserId: receiverIdController.text, qos: true).then((value) {
         if (value.result == false || value.value == false) {
           showToast('消息发送失败');
         }
@@ -234,7 +233,7 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
   }
 
   void logout() {
-    FlutterMobileIMSDK.logout().then((value) {
+    FlutterMobileImsdk.logout().then((value) {
       if (value.result == true) {
         Navigator.pop(context);
       } else {

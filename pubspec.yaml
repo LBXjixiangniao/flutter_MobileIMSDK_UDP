@@ -1,6 +1,6 @@
 name: flutter_mobile_imsdk
 description: A new flutter plugin project.
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/LBXjixiangniao/flutter_MobileIMSDK
 
 environment:
@@ -27,10 +27,10 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.lbx.flutter_MobileIMSDK
-        pluginClass: FlutterMobileIMSDKPlugin
+        package: com.lbx.flutter_mobile_imsdk
+        pluginClass: FlutterMobileImsdkPlugin
       ios:
-        pluginClass: FlutterMobileIMSDKPlugin
+        pluginClass: FlutterMobileImsdkPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
