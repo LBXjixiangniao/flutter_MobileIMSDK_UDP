@@ -72,7 +72,7 @@ class FlutterMobileImsdk {
   }
 
   /**
- * 初始化SDK
+ * 初始化SDK // 提示：在不退出APP的情况下退出登陆后再重新登陆时，请确保调用本方法一次，不然会报code=203错误哦！
  * 
  * serverIP:服务器ip地址
  * serverPort：服务器端口号
@@ -109,6 +109,7 @@ class FlutterMobileImsdk {
   }
 
   /**
+   * 退出登录重新登录记得要调一下initMobileIMSDK方法，不然会报code=203错误哦！
  * 发送登陆信息.本方法中已经默认进行了核心库的初始化，因而使用本类完成登陆时，就无需单独 调用初始化方法[ClientCoreSDK initCore]了。
  * 
  * loginUserId:提交到服务端的准一id，保证唯一就可以通信，可能是登陆用户名、 也可能是任意不重复的id等，具体意义由业务层决定

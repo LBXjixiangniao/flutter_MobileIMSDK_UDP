@@ -116,6 +116,8 @@ public class FlutterMobileImsdkPlugin implements FlutterPlugin, MethodCallHandle
     ClientCoreSDK.getInstance().release();
   }
 
+  // 确保MobileIMSDK被初始化哦（整个APP生生命周期中只需调用一次哦）
+	// 提示：在不退出APP的情况下退出登陆后再重新登陆时，请确保调用本方法一次，不然会报code=203错误哦！
   private void initMobileIMSDK(@NonNull MethodCall call,@NonNull Result result)
   {
     if(!init) {

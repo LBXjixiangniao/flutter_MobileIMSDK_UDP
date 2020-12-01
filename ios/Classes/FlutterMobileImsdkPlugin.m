@@ -80,6 +80,8 @@
       }
 }
 
+// 确保MobileIMSDK被初始化哦（整个APP生生命周期中只需调用一次哦）
+	// 提示：在不退出APP的情况下退出登陆后再重新登陆时，请确保调用本方法一次，不然会报code=203错误哦！
 - (void)initMobileIMSDK:(FlutterMethodCall*)call result:(FlutterResult)result 
 {
     if(!self._init && [call.arguments isKindOfClass:NSDictionary.class])

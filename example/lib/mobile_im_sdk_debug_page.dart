@@ -156,6 +156,10 @@ class _MobileIMSDKDebugPageState extends State<MobileIMSDKDebugPage> with Ticker
   void dispose() {
     _streamSubscription?.cancel();
     _connectStatusStreamController?.close();
+    _keepAliveAnimationController.dispose();
+    _reloginAnimationController.dispose();
+    _qosSendAnimationController.dispose();
+    _qosReceiveAnimationController.dispose();
     super.dispose();
   }
 
