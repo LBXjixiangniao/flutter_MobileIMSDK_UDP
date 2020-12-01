@@ -1,6 +1,6 @@
 name: flutter_mobile_imsdk
-description: A new flutter plugin project.
-version: 0.0.3
+description: 开源项目[MobileIMSDK](https://github.com/JackJiang2011/MobileIMSDK) UDP移动端的flutter封装
+version: 0.0.4
 homepage: https://github.com/LBXjixiangniao/flutter_MobileIMSDK
 
 environment:

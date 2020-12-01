@@ -1,13 +1,15 @@
 # flutter_mobile_imsdk
 
-开源项目[MobileIMSDK](https://github.com/JackJiang2011/MobileIMSDK) 移动端的flutter封装。当前只对接了UDP的
+开源项目[MobileIMSDK](https://github.com/JackJiang2011/MobileIMSDK) UDP移动端的flutter封装。
+TCP：https://pub.dev/packages/flutter_mobileimsdk_tcp
 
 ## 用法
 
 ### 初始化sdk
+**提示：** 在不退出APP的情况下退出登陆后再重新登陆时，请确保调用本方法一次，不然会报code=203错误哦！
 ```
 /**
- * 初始化SDK
+ * 初始化SDK 
  * 
  * serverIP:服务器ip地址
  * serverPort：服务器端口号
@@ -33,6 +35,7 @@ FlutterMobileImsdk.initMobileIMSDK(
 
 ### 登录
 登录前一定要先初始化sdk，设置ip和端口号
+退出登录重新登录记得要调一下initMobileIMSDK方法，不然会报code=203错误哦！
 ```
 FlutterMobileImsdk.login(loginUserId: accountController.text, loginToken: passwordController.text)
               .then((value) {
